@@ -3,12 +3,12 @@ using ProductManagementAPI.DataAccess.Entity;
 
 namespace ProductManagementAPI.DataAccess.Repos.Generic;
 
-public class GenericRepo<T> where T : BaseEntity
+public class BaseGenericRepo<T> : IBaseGenericRepo<T> where T : BaseEntity
 {
     protected readonly DbContext _context;
     protected readonly DbSet<T> _dbSet;
 
-    public GenericRepo(DbContext context)
+    public BaseGenericRepo(DbContext context)
     {
         _context = context;
         _dbSet = context.Set<T>();

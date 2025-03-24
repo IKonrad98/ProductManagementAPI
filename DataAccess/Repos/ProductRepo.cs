@@ -4,7 +4,7 @@ using ProductManagementAPI.DataAccess.Repos.RepoInterface;
 
 namespace ProductManagementAPI.DataAccess.Repos;
 
-public class ProductRepo : GenericRepo<ProductEntity>, IProductRepo
+public class ProductRepo : BaseGenericRepo<ProductEntity>, IProductRepo
 {
     private readonly ProductManagementDb _context;
 
