@@ -54,4 +54,14 @@ public class ProductsController(IProductService service) : ControllerBase
         await service.DeleteAsync(id, cancellationToken);
         return Ok();
     }
+
+    [HttpPost("upload")]
+    public async Task<IActionResult> UploadImage(
+    IFormFile file,
+    [FromServices] IFileStorageService fileStorage,
+    CancellationToken cancellationToken)
+    {
+        var objectName = await fileStorage.UploadFileAsync(file, "products", cancellationToken);
+        return Ok(new { objectName });
+    }
 }
