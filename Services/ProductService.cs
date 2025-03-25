@@ -1,66 +1,79 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.EntityFrameworkCore;
-using ProductManagementAPI.DataAccess;
 using ProductManagementAPI.DataAccess.Models;
+using ProductManagementAPI.DataAccess.Repos.RepoInterface;
 using ProductManagementAPI.Services.Interfaces;
 
 namespace ProductManagementAPI.Services;
 
 public class ProductService : IProductService
 {
-    private readonly ProductManagementDb _context;
+    private readonly IProductRepo _repo;
     private readonly IMapper _mapper;
 
-    public ProductService(ProductManagementDb context, IMapper mapper)
+    public ProductService(IProductRepo repo, IMapper mapper)
     {
-        _context = context;
+        _repo = repo;
         _mapper = mapper;
     }
 
-    public async Task<ProductModel?> GetByIdAsync(Guid id, CancellationToken cancellationToken)
+    public async Task<ProductModel> CreateAsync(
+        CreateProductModel model,
+        CancellationToken cancellationToken)
     {
-        var entity = await _context.Products.FindAsync([id], cancellationToken);
-        return entity is null ? null : _mapper.Map<ProductModel>(entity);
+        var entity = _mapper.Map<CreateProductModel, ProductEntity>(model);
+        var addedEntity = await _repo.CreateAsync(entity, cancellationToken);
+
+        await _repo.SaveChangesAsync(cancellationToken);
+        var result = _mapper.Map<ProductEntity, ProductModel>(addedEntity);
+
+        return result;
     }
 
-    public async Task<IEnumerable<ProductModel>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<ProductModel> GetByIdAsync(
+    Guid id,
+    CancellationToken cancellationToken)
     {
-        var entities = await _context.Products.ToListAsync(cancellationToken);
-        return _mapper.Map<IEnumerable<ProductModel>>(entities);
+        var entity = await _repo.GetByIdAsync(id, cancellationToken);
+        var result = _mapper.Map<ProductEntity, ProductModel>(entity);
+
+        return result;
     }
 
-    public async Task<ProductModel> CreateAsync(CreateProductModel model, CancellationToken cancellationToken)
+    public async Task<IEnumerable<ProductModel>> GetAllAsync(
+        CancellationToken cancellationToken)
     {
-        var entity = _mapper.Map<ProductEntity>(model);
-        entity.Id = Guid.NewGuid();
+        var entities = await _repo.GetAllAsync(cancellationToken);
+        var result = _mapper.Map<IEnumerable<ProductEntity>, IEnumerable<ProductModel>>(entities);
 
-        _context.Products.Add(entity);
-        await _context.SaveChangesAsync(cancellationToken);
-
-        return _mapper.Map<ProductModel>(entity);
+        return result;
     }
 
-    public async Task<ProductModel?> UpdateAsync(Guid id, JsonPatchDocument<UpdateProductModel> patchModel, CancellationToken cancellationToken)
+    public async Task<ProductModel> UpdateAsync(
+    Guid id,
+    JsonPatchDocument<UpdateProductModel> patchModel,
+    CancellationToken cancellationToken)
     {
-        var entity = await _context.Products.FindAsync([id], cancellationToken);
-        if (entity is null) return null;
+        var entity = await _repo.GetByIdAsync(id, cancellationToken);
 
-        var updateModel = _mapper.Map<UpdateProductModel>(entity);
+        var updateModel = _mapper.Map<ProductEntity, UpdateProductModel>(entity);
         patchModel.ApplyTo(updateModel);
-
         _mapper.Map(updateModel, entity);
 
-        await _context.SaveChangesAsync(cancellationToken);
-        return _mapper.Map<ProductModel>(entity);
+        var updatedEntity = await _repo.UpdateAsync(entity, cancellationToken);
+        await _repo.SaveChangesAsync(cancellationToken);
+
+        var result = _mapper.Map<ProductEntity, ProductModel>(updatedEntity);
+
+        return result;
     }
 
-    public async Task DeleteAsync(Guid id, CancellationToken cancellationToken)
+    public async Task DeleteAsync(
+        Guid id,
+        CancellationToken cancellationToken)
     {
-        var entity = await _context.Products.FindAsync([id], cancellationToken);
-        if (entity is null) return;
-
-        _context.Products.Remove(entity);
-        await _context.SaveChangesAsync(cancellationToken);
+        var entity = await _repo.GetByIdAsync(id, cancellationToken);
+        await _repo.DeleteAsync(id, cancellationToken);
+        await _repo.SaveChangesAsync(cancellationToken);
     }
 }
