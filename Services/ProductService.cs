@@ -10,24 +10,28 @@ public class ProductService : IProductService
 {
     private readonly IProductRepo _repo;
     private readonly IMapper _mapper;
+    private readonly IFileStorageService _fileStorage;
 
-    public ProductService(IProductRepo repo, IMapper mapper)
+    public ProductService(IProductRepo repo, IMapper mapper, IFileStorageService fileStorage)
     {
         _repo = repo;
         _mapper = mapper;
+        _fileStorage = fileStorage;
     }
 
-    public async Task<ProductModel> CreateAsync(
-        CreateProductModel model,
-        CancellationToken cancellationToken)
+    public async Task<ProductModel> CreateAsync(CreateProductModel model, CancellationToken cancellationToken)
     {
-        var entity = _mapper.Map<CreateProductModel, ProductEntity>(model);
-        var addedEntity = await _repo.CreateAsync(entity, cancellationToken);
+        var entity = _mapper.Map<ProductEntity>(model);
 
+        if (model.Image is not null)
+        {
+            entity.ImageUrl = await _fileStorage.UploadFileAsync(model.Image, "products", cancellationToken);
+        }
+
+        await _repo.CreateAsync(entity, cancellationToken);
         await _repo.SaveChangesAsync(cancellationToken);
-        var result = _mapper.Map<ProductEntity, ProductModel>(addedEntity);
 
-        return result;
+        return _mapper.Map<ProductModel>(entity);
     }
 
     public async Task<ProductModel> GetByIdAsync(
@@ -55,17 +59,28 @@ public class ProductService : IProductService
     CancellationToken cancellationToken)
     {
         var entity = await _repo.GetByIdAsync(id, cancellationToken);
+        if (entity is null) return null;
 
-        var updateModel = _mapper.Map<ProductEntity, UpdateProductModel>(entity);
+        var updateModel = _mapper.Map<UpdateProductModel>(entity);
         patchModel.ApplyTo(updateModel);
+
+        if (updateModel.ImageUrl != entity.ImageUrl)
+        {
+            if (!string.IsNullOrEmpty(entity.ImageUrl))
+            {
+                var oldObjectName = Path.GetFileName(new Uri(entity.ImageUrl).AbsolutePath);
+                await _fileStorage.DeleteFileAsync(oldObjectName, "products", cancellationToken);
+            }
+
+            entity.ImageUrl = updateModel.ImageUrl;
+        }
+
         _mapper.Map(updateModel, entity);
 
         var updatedEntity = await _repo.UpdateAsync(entity, cancellationToken);
         await _repo.SaveChangesAsync(cancellationToken);
 
-        var result = _mapper.Map<ProductEntity, ProductModel>(updatedEntity);
-
-        return result;
+        return _mapper.Map<ProductModel>(updatedEntity);
     }
 
     public async Task DeleteAsync(
@@ -73,6 +88,13 @@ public class ProductService : IProductService
         CancellationToken cancellationToken)
     {
         var entity = await _repo.GetByIdAsync(id, cancellationToken);
+
+        if (!string.IsNullOrEmpty(entity.ImageUrl))
+        {
+            var objectName = Path.GetFileName(new Uri(entity.ImageUrl).AbsolutePath);
+            await _fileStorage.DeleteFileAsync(objectName, "products", cancellationToken);
+        }
+
         await _repo.DeleteAsync(id, cancellationToken);
         await _repo.SaveChangesAsync(cancellationToken);
     }

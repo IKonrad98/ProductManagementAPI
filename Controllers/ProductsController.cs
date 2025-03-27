@@ -7,29 +7,35 @@ namespace ProductManagementAPI.Controllers;
 
 [Route("products")]
 [ApiController]
-public class ProductsController(IProductService service) : ControllerBase
+public class ProductsController : ControllerBase
 {
+    private readonly IProductService _productService;
+
+    public ProductsController(IProductService productService)
+    {
+        _productService = productService;
+    }
+
     [HttpPost("create")]
     public async Task<ActionResult> CreateAsync(
-        [FromBody] CreateProductModel model,
+        [FromForm] CreateProductModel model,
         CancellationToken cancellationToken)
     {
-        var product = await service.CreateAsync(model, cancellationToken);
+        var product = await _productService.CreateAsync(model, cancellationToken);
         return Ok(product);
     }
 
     [HttpGet("{id}")]
     public async Task<ActionResult> GetByIdAsync(Guid id, CancellationToken cancellationToken)
     {
-        var product = await service.GetByIdAsync(id, cancellationToken);
+        var product = await _productService.GetByIdAsync(id, cancellationToken);
         return product is null ? NotFound() : Ok(product);
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetAllAsync(
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> GetAllAsync(CancellationToken cancellationToken)
     {
-        var products = await service.GetAllAsync(cancellationToken);
+        var products = await _productService.GetAllAsync(cancellationToken);
         return Ok(products);
     }
 
@@ -39,27 +45,22 @@ public class ProductsController(IProductService service) : ControllerBase
         [FromBody] JsonPatchDocument<UpdateProductModel> patchModel,
         CancellationToken cancellationToken)
     {
-        var updated = await service.UpdateAsync(
-            id,
-            patchModel,
-            cancellationToken);
+        var updated = await _productService.UpdateAsync(id, patchModel, cancellationToken);
         return updated is null ? NotFound() : Ok(updated);
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteAsync(
-        Guid id,
-        CancellationToken cancellationToken)
+    public async Task<ActionResult> DeleteAsync(Guid id, CancellationToken cancellationToken)
     {
-        await service.DeleteAsync(id, cancellationToken);
+        await _productService.DeleteAsync(id, cancellationToken);
         return Ok();
     }
 
     [HttpPost("upload")]
     public async Task<IActionResult> UploadImage(
-    IFormFile file,
-    [FromServices] IFileStorageService fileStorage,
-    CancellationToken cancellationToken)
+        IFormFile file,
+        [FromServices] IFileStorageService fileStorage,
+        CancellationToken cancellationToken)
     {
         var objectName = await fileStorage.UploadFileAsync(file, "products", cancellationToken);
         return Ok(new { objectName });

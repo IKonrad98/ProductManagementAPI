@@ -34,6 +34,14 @@ public class MinioStorageService : IFileStorageService
             .WithObjectSize(file.Length)
             .WithContentType(file.ContentType), cancellationToken);
 
-        return objectName;
+        var imageUrl = $"http://localhost:9000/{bucketName}/{objectName}";
+        return imageUrl;
+    }
+
+    public async Task DeleteFileAsync(string objectName, string bucketName, CancellationToken cancellationToken)
+    {
+        await _minioClient.RemoveObjectAsync(new RemoveObjectArgs()
+            .WithBucket(bucketName)
+            .WithObject(objectName), cancellationToken);
     }
 }
