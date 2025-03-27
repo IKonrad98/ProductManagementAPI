@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Minio;
 using ProductManagementAPI.DataAccess;
 using ProductManagementAPI.DataAccess.Repos;
 using ProductManagementAPI.DataAccess.Repos.RepoInterface;
@@ -9,13 +10,21 @@ using ProductManagementAPI.Services.Interfaces;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddSingleton<IMinioClient>(_ =>
+    new MinioClient()
+        .WithEndpoint(builder.Configuration["Minio:Endpoint"])
+        .WithCredentials(
+            builder.Configuration["Minio:AccessKey"],
+            builder.Configuration["Minio:SecretKey"])
+        .WithSSL(false)
+        .Build());
 
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
+builder.Services.AddScoped<IFileStorageService, MinioStorageService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
