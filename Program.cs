@@ -6,6 +6,7 @@ using ProductManagementAPI.DataAccess.Repos.RepoInterface;
 using ProductManagementAPI.Mapping;
 using ProductManagementAPI.Services;
 using ProductManagementAPI.Services.Interfaces;
+using Prometheus;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -44,7 +45,17 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseRouting();
+
+app.UseHttpMetrics();
+
 app.UseAuthorization();
+
+app.UseEndpoints(endpoints =>
+{
+    endpoints.MapControllers();
+    endpoints.MapMetrics();
+});
 
 app.MapControllers();
 

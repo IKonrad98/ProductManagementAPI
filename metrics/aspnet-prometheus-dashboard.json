@@ -1,0 +1,162 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "type": "dashboard",
+        "name": "Annotations & Alerts",
+        "enabled": true
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "panels": [
+    {
+      "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "unit": "ops"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {},
+      "targets": [
+        {
+          "expr": "sum by (method, endpoint) (http_requests_received_total)",
+          "legendFormat": "{{method}} {{endpoint}}",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP Requests Total",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "s" },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {},
+      "targets": [
+        {
+          "expr": "rate(http_request_duration_seconds_sum[1m]) / rate(http_request_duration_seconds_count[1m])",
+          "refId": "A"
+        }
+      ],
+      "title": "Avg Request Duration (1m)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "short" },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {},
+      "targets": [
+        {
+          "expr": "http_requests_in_progress",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP Requests In Progress",
+      "type": "stat"
+    },
+    {
+      "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": { "unit": "bytes" },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 6,
+        "y": 8
+      },
+      "id": 4,
+      "options": {},
+      "targets": [
+        {
+          "expr": "dotnet_total_memory_bytes",
+          "refId": "A"
+        }
+      ],
+      "title": ".NET Memory Usage",
+      "type": "stat"
+    },
+    {
+      "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 12,
+        "y": 8
+      },
+      "id": 5,
+      "options": {},
+      "targets": [
+        {
+          "expr": "process_num_threads",
+          "refId": "A"
+        }
+      ],
+      "title": "Threads Count",
+      "type": "stat"
+    },
+    {
+      "datasource": "prometheus",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 18,
+        "y": 8
+      },
+      "id": 6,
+      "options": {},
+      "targets": [
+        {
+          "expr": "process_open_handles",
+          "refId": "A"
+        }
+      ],
+      "title": "Open Handles",
+      "type": "stat"
+    }
+  ],
+  "schemaVersion": 37,
+  "title": "ASP.NET Core API Metrics",
+  "uid": null,
+  "version": 1
+}
