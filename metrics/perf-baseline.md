@@ -18,3 +18,16 @@
 | Errors        | 0             |
 
 ---
+
+**Test endpoint:** `GET /products`
+**URL:** `http://localhost:5219/products`
+**Duration:** 30s
+**Connections:** 20
+
+**Requests:** 13,000+  
+**Req/Sec (avg):** 418.04  
+**Latency (avg):** 47.41 ms  
+**Max latency:** 572 ms  
+**Bytes/Sec (avg):** 6.14 MB  
+
+---
