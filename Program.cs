@@ -6,7 +6,9 @@ using ProductManagementAPI.DataAccess.Repos.RepoInterface;
 using ProductManagementAPI.Mapping;
 using ProductManagementAPI.Services;
 using ProductManagementAPI.Services.Interfaces;
+using ProductManagementAPI.Services.ServicesInterface;
 using Prometheus;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +33,11 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 builder.Services.AddDbContext<ProductManagementDb>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+    ConnectionMultiplexer.Connect(builder.Configuration["Redis:Connection"]!));
+
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 
