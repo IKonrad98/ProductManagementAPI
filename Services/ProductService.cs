@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.JsonPatch;
 using ProductManagementAPI.DataAccess.Models;
 using ProductManagementAPI.DataAccess.Repos.RepoInterface;
 using ProductManagementAPI.Services.Interfaces;
+using ProductManagementAPI.Services.ServicesInterface;
 
 namespace ProductManagementAPI.Services;
 
@@ -11,12 +12,18 @@ public class ProductService : IProductService
     private readonly IProductRepo _repo;
     private readonly IMapper _mapper;
     private readonly IFileStorageService _fileStorage;
+    private readonly ICacheService _cache;
 
-    public ProductService(IProductRepo repo, IMapper mapper, IFileStorageService fileStorage)
+    public ProductService(
+        IProductRepo repo,
+        IMapper mapper,
+        IFileStorageService fileStorage,
+        ICacheService cache)
     {
         _repo = repo;
         _mapper = mapper;
         _fileStorage = fileStorage;
+        _cache = cache;
     }
 
     public async Task<ProductModel> CreateAsync(CreateProductModel model, CancellationToken cancellationToken)
@@ -44,12 +51,16 @@ public class ProductService : IProductService
         return result;
     }
 
-    public async Task<IEnumerable<ProductModel>> GetAllAsync(
-        CancellationToken cancellationToken)
+    public async Task<IEnumerable<ProductModel>> GetAllAsync(CancellationToken cancellationToken)
     {
+        const string cacheKey = "products_all";
+        var cached = await _cache.GetAsync<IEnumerable<ProductModel>>(cacheKey);
+        if (cached is not null) return cached;
+
         var entities = await _repo.GetAllAsync(cancellationToken);
         var result = _mapper.Map<IEnumerable<ProductEntity>, IEnumerable<ProductModel>>(entities);
 
+        await _cache.SetAsync(cacheKey, result, TimeSpan.FromMinutes(5));
         return result;
     }
 

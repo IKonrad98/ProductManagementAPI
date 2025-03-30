@@ -28,6 +28,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddScoped<IProductService, ProductService>();
 builder.Services.AddScoped<IProductRepo, ProductRepo>();
 builder.Services.AddScoped<IFileStorageService, MinioStorageService>();
+builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
@@ -36,8 +37,6 @@ builder.Services.AddDbContext<ProductManagementDb>(options =>
 
 builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
     ConnectionMultiplexer.Connect(builder.Configuration["Redis:Connection"]!));
-
-builder.Services.AddScoped<ICacheService, RedisCacheService>();
 
 builder.Services.AddControllers().AddNewtonsoftJson();
 
@@ -54,7 +53,10 @@ app.UseHttpsRedirection();
 
 app.UseRouting();
 
-app.UseHttpMetrics();
+app.UseHttpMetrics(options =>
+{
+    options.AddCustomLabel("route", context => context.Request.Path);
+});
 
 app.UseAuthorization();
 

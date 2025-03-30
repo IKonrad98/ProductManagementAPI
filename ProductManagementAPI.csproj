@@ -24,6 +24,9 @@
 
   <ItemGroup>
     <Folder Include="Migrations\" />
+    <Folder Include="_internal_storage\grafana-data\" />
+    <Folder Include="_internal_storage\minio-data\" />
+    <Folder Include="_internal_storage\redis-data\" />
 	  
 	  
   </ItemGroup>
