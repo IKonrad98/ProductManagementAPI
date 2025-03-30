@@ -18,11 +18,15 @@
     <PackageReference Include="Minio" Version="6.0.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
     <PackageReference Include="prometheus-net.AspNetCore" Version="8.2.1" />
+    <PackageReference Include="StackExchange.Redis" Version="2.8.31" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
   </ItemGroup>
 
   <ItemGroup>
     <Folder Include="Migrations\" />
+    <Folder Include="_internal_storage\grafana-data\" />
+    <Folder Include="_internal_storage\minio-data\" />
+    <Folder Include="_internal_storage\redis-data\" />
 	  
 	  
   </ItemGroup>
