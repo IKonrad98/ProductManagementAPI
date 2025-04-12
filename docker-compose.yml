@@ -1,29 +1,29 @@
 services:
+  productapi:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: productapi
+    ports:
+      - "5000:80"
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - Minio__Endpoint=minio:9000
+      - Minio__AccessKey=admin
+      - Minio__SecretKey=admin123
+      - Redis__Connection=redis:6379
+    depends_on:
+      - redis
+      - minio
+    restart: unless-stopped
+
   redis:
     image: redis:7.2-alpine
     container_name: redis
     ports:
       - "6379:6379"
-    restart: unless-stopped
     volumes:
       - ./_internal_storage/redis-data:/data
-
-  grafana:
-    image: grafana/grafana-oss
-    container_name: grafana
-    ports:
-      - "3000:3000"
-    restart: unless-stopped
-    volumes:
-      - ./_internal_storage/grafana-data:/var/lib/grafana
-
-  prometheus:
-    image: prom/prometheus:latest
-    container_name: prometheus
-    ports:
-      - "9090:9090"
-    volumes:
-      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml
     restart: unless-stopped
 
   minio:
@@ -38,4 +38,22 @@ services:
     command: server /data --console-address ":9001"
     volumes:
       - ./_internal_storage/minio-data:/data
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./metrics/prometheus.yml:/etc/prometheus/prometheus.yml
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana-oss
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./_internal_storage/grafana-data:/var/lib/grafana
     restart: unless-stopped

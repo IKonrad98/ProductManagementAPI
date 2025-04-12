@@ -1,0 +1,42 @@
+# .NET build artifacts
+bin/
+obj/
+
+# User-specific files
+*.user
+*.suo
+
+# Rider / VSCode / Visual Studio settings
+.vscode/
+.idea/
+*.csproj.user
+
+# OS files
+*.DS_Store
+Thumbs.db
+
+# Logs and temp
+*.log
+*.tmp
+
+# Git and version control
+.git/
+.gitignore
+.gitattributes
+
+# Docker-specific
+docker-compose.override.yml
+.env
+
+# Test files
+tests/
+*.TestResults/
+
+# Node/npm
+node_modules/
+dist/
+
+# Backup
+*.bak
+
+_internal_storage
